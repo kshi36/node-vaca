@@ -9,37 +9,141 @@
     <title>Vaca</title>
 
     <!-- Bootstrap -->
-<!--    TODO: fix style-->
-<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
     <link href="/stylesheets/bootstrap.css" rel="stylesheet" type="text/css">
-    <script src="/javascripts/bootstrap.min.js"></script>
+
+    <style>
+        #map {
+            height: 94.5vh;
+            width: 100vw;
+        }
+
+        input[type=search] {
+            background-color: #fff;
+            border: 0;
+            border-radius: 2px;
+            box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+            margin: 10px;
+            padding: 0 0.5em;
+            font: 400 18px Roboto, Arial, sans-serif;
+            overflow: hidden;
+            line-height: 35px;
+            margin-right: 0;
+            min-width: 35%;
+        }
+
+        .details-panel-full {
+            display: flex;
+            height: 94.5vh;
+
+            position: absolute;
+            right: 0;
+        }
+
+        .wrapper {
+            display: flex;
+            height: 94.5vh;
+        }
+
+        #details-toggle {
+            /*width: 40px;*/
+            height: 47px;
+            display: grid;
+            place-items: center;
+
+            border: none;
+            border-radius: 5px 0 0 5px;
+            box-shadow: 0 0 10px rgba(0,0,0, 0.1);
+            clip-path: inset(0px 0px -5px -5px);
+        }
+
+        .icon-close {
+            display: none !important;
+        }
+
+        /*#details-panel {*/
+        /*    display: none;*/
+        /*    width: 200px;*/
+        /*    padding: 12px;*/
+        /*    box-shadow: 0 3rem 10px rgba(0,0,0, 0.2);*/
+
+        /*    transition: 0.5s;*/
+        /*}*/
+
+        #details-panel {
+            /*display: none;*/
+            /*width: 200px;*/
+            width: 0;
+            box-shadow: 0 3rem 10px rgba(0,0,0, 0.2);
+            overflow-x: hidden;
+            transition: 0.4s;
+        }
+
+        #details-panel .container {
+            padding: 12px;
+        }
+
+        .details-panel-open #details-panel {
+            /*display: initial;*/
+            width: 500px;
+        }
+
+        .details-panel-open .icon-open {
+            display: none !important;
+        }
+
+        .details-panel-open .icon-close {
+            display: initial !important;
+        }
+    </style>
 </head>
 <body>
-<div class="navbar navbar-default navbar-static-top" role="navigation">
+<!-- Navigation bar -->
+<nav class="navbar navbar-expand-md bg-light py-0">
     <div class="container">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="/">Vaca</a>
+        <a class="navbar-brand" href="/">Vaca</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/test">Test</a>
+                </li>
+
+                <%# current user is logged in %>
+                <% if (currentUser != null) { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/places">Places</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/map">Explore</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile"><%= currentUser.username %>!</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Log Out</a>
+                    </li>
+                <% } %>
+                <% if (currentUser == null) { %>
+                    <li>
+                        <a class="nav-link" href="/login">Log In</a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="/signup">Sign Up</a>
+                    </li>
+                <% } %>
+            </ul>
         </div>
-        <ul class="nav navbar-nav navbar-right">
-            <li><a href="/about">About</a></li>
-
-            <%# current user is logged in %>
-            <% if (currentUser != null) { %>
-                <li><a href="/places">Places</a></li>
-                <li><a href="/map">Explore</a></li>
-                <li><a href="/profile"><%= currentUser.username %>!</a></li>
-                <li><a href="/logout">Log Out</a></li>
-            <% } %>
-            <% if (currentUser == null) { %>
-                <li><a href="/login">Log In</a></li>
-                <li><a href="/signup">Sign Up</a></li>
-            <% } %>
-        </ul>
     </div>
-</div>
+</nav>
 
-<div class="container">
-
+<main>
     <% if (error && error.length > 0) { %>
         <div class="alert alert-danger" role="alert">
             <%= error %>
@@ -50,4 +154,4 @@
         <div class="alert alert-info" role="alert">
             <%= info %>
         </div>
-    <% } %>
+<% } %>

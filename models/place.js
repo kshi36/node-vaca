@@ -28,11 +28,11 @@ var placeSchema = mongoose.Schema({
     name:{type:String, required:true, unique:true},
     image:{type:String, required:false, unique:false},
     // category:{type:Category, default: Category.Other, required:false, unique:false},                //enums??
-    category:{type:String, enum:['Park','Lake','Mountain','City','Other'], default: 'Other', required:false, unique:false},
+    category:{type:String, enum:['Park','Lake','Mountain','City','University','Attraction','Other'], default: 'Other', required:false, unique:false},
     state:{type:String, required:false},
     country:{type:String, required:false},
-    coords:{type:String, required:true},            //TODO: import Google Maps API stuff
-    placeID:{type:String, required:false},           //TODO: import Google Maps API stuff
+    coords:{type:{lat:Number, lng:Number}, required:true},
+    placeID:{type:String, required:true, unique:true},
     userID:{type:mongoose.Schema.Types.ObjectId, required:true, unique:false},
     public:{type:Boolean, default:false, required:false, unique:false},
     createdAt:{type:Date, default:Date.now}

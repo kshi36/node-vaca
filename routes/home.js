@@ -22,6 +22,14 @@ router.get('/about', function(req, res){
     res.render('home/about');
 });
 
+//TODO: remove this
+// Maps API Key
+const key = process.env.GOOGLE_API_KEY;
+router.get('/test', function(req, res){
+    res.render('home/test', {key:key});
+
+});
+
 router.get('/login', function(req, res){
     res.render('home/login');
 });

@@ -1,13 +1,282 @@
 <%- include('../_partial/_header'); %>
 
-<h1>Map</h1>
-<iframe
-        width="600"
-        height="450"
-        style="border:0"
-        loading="lazy"
-        allowfullscreen src="https://www.google.com/maps/embed/v1/search?q=Central%20Park%2C%20New%20York%2C%20NY%2C%20USA&key=AIzaSyBZczefTnkB6aBJDuAXnCGMKKd3gzM7t64">
-</iframe>
+<div class="wrapper">
+    <!-- Map -->
+    <div id="map"></div>
+
+    <script>
+        function initMap(){
+            const sydney = {lat:-33.8688, lng:151.2093};
+
+            //new map
+            var map = new google.maps.Map(document.getElementById('map'), {     //map options
+                zoom: 14,
+                center: sydney,
+                disableDefaultUI: true,
+                // zoomControl: true,
+                disableDoubleClickZoom: true,
+                // clickableIcons: false,
+            });
+
+            //place details service
+            var placeService = new google.maps.places.PlacesService(map);
+
+            //new marker
+            var marker = new google.maps.Marker({   //marker options
+                position: sydney,
+                map: map,
+                animation: google.maps.Animation.DROP,
+            });
+
+            //details panel
+            var panel = document.getElementById('panel');
+
+            //search box
+            const input = document.createElement("input");
+            input.type = "search";
+            input.placeholder = "Enter a location";
+            const searchBox = new google.maps.places.SearchBox(input);
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+            //search box results' markers
+            var markers = [];
+
+            //bias SearchBox results to current map's viewport
+            map.addListener('bounds_changed', () => {
+                searchBox.setBounds(map.getBounds());
+            });
+
+            //event listener to retrieve place details of submitted search result
+            searchBox.addListener('places_changed', function(){
+                const places = searchBox.getPlaces();
+
+                if (places.length == 0){return;}
+
+                //clear out old markers
+                removeMarkers();
+
+                //for each place, get name and location
+                const bounds = new google.maps.LatLngBounds();
+
+                places.forEach((place) => {
+                    if (!place.geometry || !place.geometry.location) {
+                        console.log("Returned place contains no geometry");
+                        return;
+                    }
+
+                    // Create a marker for each place.
+                    var markertemp = new google.maps.Marker({
+                        map: map,
+                        title: place.name,
+                        position: place.geometry.location,
+                    });
+                    //event listener to add markers on click
+                    markertemp.addListener('click', function(event){      //event.latLng records at click position
+                        console.log('Clicked on a searchbox marker...');
+
+                        //POI (Google's point of interest) is clicked
+                        console.log('POI place id (searchbox): ' + place.place_id);
+                        console.log('POI coords (searchbox): ' + event.latLng + ', type: ' + typeof event.latLng);
+
+                        //stop infowindow from appearing
+                        event.stop();
+
+                        //place details service
+                        requestDetails({coords:event.latLng, placeId: place.place_id});
+
+                        //set create button to enabled
+                        document.getElementById('submitForm').disabled = false;
+                    });
+
+                    markers.push(markertemp);
+
+                    if (place.geometry.viewport) {
+                        // Only geocodes have viewport.
+                        bounds.union(place.geometry.viewport);
+                    } else {
+                        bounds.extend(place.geometry.location);
+                    }
+                });
+                //TODO: pan to search results region
+                map.fitBounds(bounds);
+                // map.panToBounds(bounds);
+            });
+
+            //event listener to add markers on click
+            // google.maps.event.addListener(map, 'click', function(event){
+            map.addListener('click', function(event){      //event.latLng records at click position
+                //POI (Google's point of interest) is clicked
+                if (event.placeId) {
+                    console.log('POI place id: ' + event.placeId);
+                    console.log('POI coords: ' + event.latLng + ', type: ' + typeof event.latLng);
+
+                    //stop infowindow from appearing
+                    event.stop();
+
+                    //clear current marker
+                    clear();
+
+                    //add new marker
+                    addMarker({coords:event.latLng});
+
+                    //place details service
+                    requestDetails({coords:event.latLng, placeId: event.placeId});
+
+                    //set create button to enabled
+                    document.getElementById('submitForm').disabled = false;
+                }
+            });
+
+            function addMarker(props){
+                marker = new google.maps.Marker({       //marker options
+                    position: props.coords,
+                    map: map,
+                    animation: google.maps.Animation.DROP,
+                    // draggable: true,
+                });
+                //Below is same thing
+                // marker.setPosition(props.coords);
+                // marker.setMap(map);
+
+                // var infoWindow = new google.maps.InfoWindow();
+                // infoWindow.setContent(JSON.stringify(props.coords.toJSON(), null, 2));
+
+                // marker.addListener('contextmenu', function(event){
+                //     infoWindow.open(map, marker);
+                // });
+
+                // markers.push(marker);
+
+                // return marker;
+            }
+
+            function removeMarkers(){
+                //clear out old markers
+                markers.forEach((marker) => {
+                    marker.setMap(null);
+                });
+                markers = [];
+            }
+
+            //clear current marker
+            function clear() {
+                marker.setMap(null);
+                panel.style.visibility = 'hidden';
+            }
+
+            function requestDetails(request) {
+                var req = {
+                    placeId: request.placeId,
+                    fields: ['name','formatted_address','geometry','photos']
+                };
+                placeService.getDetails(req, function(place,status){
+                    if (status == google.maps.places.PlacesServiceStatus.OK) {
+                        //update details panel
+                        // panel.children['place-name'].textContent = place.name;
+                        // panel.children['place-address'].textContent = place.formatted_address;
+                        // panel.children['place-latlng'].textContent = place.geometry.location + " " + request.coords;
+                        // panel.children['place-id'].textContent = 'place_id: ' + request.placeId;
+
+                        document.getElementById('place-name').value = place.name;
+                        document.getElementById('place-address').value = place.formatted_address;
+                        document.getElementById('place-coords').value = JSON.stringify(request.coords);
+                        document.getElementById('place-id').value = request.placeId;
+
+                        document.getElementById('place-image').src = place.photos[0].getUrl();
+                        document.getElementById('place-image').height = 300;
+
+                        panel.style.visibility = 'visible';
+
+                        console.log("place name: " + place.name);
+                        console.log("place address: " + place.formatted_address);
+                        console.log('place coords: ' + JSON.stringify(request.coords) + ', type: ' + typeof JSON.stringify(request.coords));
+                        console.log("place id: " + request.placeId);
+                    }
+                    else {
+                        console.log('Bad place details request, status ' + status);
+                    }
+                });
+            }
+        }
+    </script>
+
+    <!-- Side panel -->
+    <div class="details-panel-full details-panel-open">
+        <button class="btn btn-light" id="details-toggle" type="button" title="Display place details">
+            <span class="icon-open">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-bar-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+                </svg>
+            </span>
+            <span class="icon-close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-bar-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5z"/>
+                </svg>
+            </span>
+        </button>
+        <div class="bg-light" id="details-panel">
+            <form action="/places/add" method="POST" enctype="multipart/form-data">
+            <div class="container" id="panel">
+                <h5>Place Details</h5>
+<!--                TODO: image selection? -->
+                <img id="place-image"><br />
+
+                <div class="form-group">
+                    <label for="place-name">Name</label>
+                    <input type="text" class="form-control" placeholder="Name" id="place-name" name="placename">
+                </div>
+
+                <div class="form-group">
+                    <label for="place-address">Address</label>
+                    <input type="text" disabled readonly class="form-control" placeholder="Address" id="place-address" name="placeaddress">
+                </div>
+
+                <label>Tag</label><br />
+                <input type="radio" class="btn-check" name="placetag" value="Park" id="tag1" checked>
+                <label class="btn btn-outline-success shadow-none" for="tag1">Park</label>
+
+                <input type="radio" class="btn-check" name="placetag" value="Lake" id="tag2">
+                <label class="btn btn-outline-info shadow-none" for="tag2">Lake</label>
+
+                <input type="radio" class="btn-check" name="placetag" value="Mountain" id="tag3">
+                <label class="btn btn-outline-dark shadow-none" for="tag3">Mountain</label>
+
+                <input type="radio" class="btn-check" name="placetag" value="City" id="tag4">
+                <label class="btn btn-outline-warning shadow-none" for="tag4">City</label>
+
+                <input type="radio" class="btn-check" name="placetag" value="University" id="tag5">
+                <label class="btn btn-outline-primary shadow-none" for="tag5">University</label>
+
+                <input type="radio" class="btn-check" name="placetag" value="Attraction" id="tag6">
+                <label class="btn btn-outline-danger shadow-none" for="tag6">Attraction</label>
+
+                <input type="radio" class="btn-check" name="placetag" value="Other" id="tag7">
+                <label class="btn btn-outline-secondary shadow-none" for="tag7">Other</label>
+
+                <input type="hidden" id="place-coords" name="placecoords">
+
+                <input type="hidden" id="place-id" name="placeid">
+                <span id="place-tags"></span><br /><br />
+
+                <button type="submit" id="submitForm" class="btn btn-success" role="button" disabled>Create</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle details panel -->
+<script>
+    document.querySelector('#details-toggle').addEventListener('click', function(){
+        document.querySelector('.details-panel-full').classList.toggle('details-panel-open');
+    });
+</script>
+
+<!-- Google Maps JS API -->
+<script
+        src="https://maps.googleapis.com/maps/api/js?key=<%= key %>&callback=initMap&libraries=places">
+    defer
+</script>
 
 <%- include('../_partial/_footer'); %>
 

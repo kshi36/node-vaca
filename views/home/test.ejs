@@ -1,0 +1,160 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <title>Test</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>Hello world!</h1>-->
+<!--</body>-->
+<!--</html>-->
+
+<%- include('../_partial/_header'); %>
+
+<div class="wrapper details-panel-open">
+    <!-- Map -->
+    <div id="map"></div>
+
+    <script>
+        function initMap(){
+            const sydney = {lat:-33.8688, lng:151.2093};
+
+            //new map
+            var map = new google.maps.Map(document.getElementById('map'), {     //map options
+                zoom: 10,
+                center: sydney,
+                disableDefaultUI: true,
+                // zoomControl: true,
+                disableDoubleClickZoom: true,
+                // clickableIcons: false,
+            });
+
+            //new marker
+            var marker = new google.maps.Marker({
+                position: sydney,
+                map: map,
+            });
+
+            var markers = [marker];
+
+            //search box
+            const input = document.createElement("input");
+            input.type = "search";
+            input.placeholder = "Enter a location";
+            const searchBox = new google.maps.places.SearchBox(input);
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(input);
+
+            //bias SearchBox results to current map's viewport
+            map.addListener('bounds_changed', () => {
+                searchBox.setBounds(map.getBounds());
+            });
+
+            //event listener to retrieve place details of submitted search result
+            searchBox.addListener('places_changed', function(){
+                const places = searchBox.getPlaces();
+
+                if (places.length == 0){return;}
+
+                //clear out old markers
+                removeMarkers();
+
+                //for each place, get name and location
+                const bounds = new google.maps.LatLngBounds();
+
+                places.forEach((place) => {
+                    if (!place.geometry || !place.geometry.location) {
+                        console.log("Returned place contains no geometry");
+                        return;
+                    }
+
+                    // Create a marker for each place.
+                    markers.push(
+                        new google.maps.Marker({
+                            map: map,
+                            title: place.name,
+                            position: place.geometry.location,
+                        })
+                    );
+
+                    if (place.geometry.viewport) {
+                        // Only geocodes have viewport.
+                        bounds.union(place.geometry.viewport);
+                    } else {
+                        bounds.extend(place.geometry.location);
+                    }
+                });
+                //pan to search results region
+                map.fitBounds(bounds);
+                // map.panToBounds(bounds);
+            });
+
+
+            //event listener to add markers on click
+            // google.maps.event.addListener(map, 'click', function(event){
+            map.addListener('click', function(event){      //event.latLng records at click position
+
+                addMarker({coords:event.latLng});
+                // //TODO: update search field with marker info, to be saved in DB (use event.latLng? Places API?)
+                // //POI (Google's point of interest) is clicked
+                // if (event.placeId) {
+                //     //remove prev. markers
+                //     removeMarkers();
+                //
+                //     //add new marker
+                //     addMarker({coords:event.latLng});
+                //     //stop infowindow from appearing
+                //     event.stop();
+                // }
+            });
+
+            function addMarker(props){
+                var marker = new google.maps.Marker({       //marker options
+                    position: props.coords,
+                    map: map,
+                    animation: google.maps.Animation.DROP,
+                    // draggable: true,
+                });
+
+                markers.push(marker);
+            }
+
+            function removeMarkers(){
+                //clear out old markers
+                markers.forEach((marker) => {
+                    marker.setMap(null);
+                    marker = null;
+                });
+                markers = [];
+            }
+        }
+    </script>
+
+    <!-- Side panel -->
+    <div class="wrapper details-panel-full">
+        <button class="btn btn-light" id="details-toggle" type="button" title="Display place details">
+            <span class="icon-open">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-bar-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+                </svg>
+            </span>
+            <span class="icon-close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-bar-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5z"/>
+                </svg>
+            </span>
+        </button>
+        <div class="bg-light" id="details-panel">
+            <div class="container">
+                <h5>Side panel</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps JS API -->
+<script
+        src="https://maps.googleapis.com/maps/api/js?key=<%= key %>&callback=initMap&libraries=places">
+    defer
+</script>
+
+<%- include('../_partial/_footer'); %>
+
