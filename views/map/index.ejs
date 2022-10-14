@@ -1,9 +1,10 @@
 <%- include('../_partial/_header'); %>
 
 <div class="wrapper">
-    <!-- Map -->
+    <!-- Map object -->
     <div id="map"></div>
 
+    <!-- Map functionality -->
     <script>
         function initMap(){
             const sydney = {lat:-33.8688, lng:151.2093};
@@ -256,7 +257,8 @@
                 <input type="hidden" id="place-coords" name="placecoords">
 
                 <input type="hidden" id="place-id" name="placeid">
-                <span id="place-tags"></span><br /><br />
+                <span id="place-tags"></span>           <!-- TODO: necessary? -->
+                <br /><br />
 
                 <button type="submit" id="submitForm" class="btn btn-success" role="button" disabled>Create</button>
             </div>

@@ -33,14 +33,65 @@ router.use(ensureAuthenticated);
 
 /** Routes */
 // full list of places page
-router.get('/', function(req, res){
+router.get('/', async function(req, res){
     //get all places from db
-    Place.find({userID: req.user.id}).exec(function(err, places){
-        if (err) { console.log(err); }  //TODO: change to flash
+    // Place.find({userID: req.user.id}).exec(function(err, places){
+    //     if (err) { console.log(err); }  //TODO: change to flash
+    //
+    //     //render "places.ejs" and pass in places object
+    //     res.render('place/places', {places:places});
+    // });
 
-        //render "places.ejs" and pass in places object
-        res.render('place/places', {places:places});
-    });
+    //get all categories (each a list of places) from db
+    const Categories = {
+        Park: 'Park',
+        Lake: 'Lake',
+        Mountain: 'Mountain',
+        City: 'City',
+        University: 'University',
+        Attraction: 'Attraction',
+        Other: 'Other'
+    };
+
+    //object to store categories list
+    var categoryList = {};
+
+    console.log('populating categories list...');
+
+    // Object.keys(Categories).forEach((category) => {
+    //     console.log('category: '+category);
+    //     //get places of specific category
+    //     Place.find({category: category}).exec(function(err, places){
+    //         console.log('category: '+category + ', size: ' + places.length);
+    //         if (err) { console.log(err); }  //TODO: change to flash
+    //
+    //         categoryList[category] = places;
+    //     });
+    //
+    //     // const places = Place.find({category: category});
+    //     // if (places.length !== 0) {
+    //     //     console.log('size: ' + places.length);
+    //     //     categoryList[category] = places;
+    //     // }
+    // });
+
+    await Object.keys(Categories).reduce(async (memo, category) => {
+        await memo;
+        const places = await Place.find({category: category});
+        console.log('size: ' + places.length);
+        if (places.length !== 0) categoryList[category] = places;
+        console.log('contents: ' + categoryList[category]);
+
+    }, undefined);
+
+    //TODO: properly implement async/await
+    // setTimeout(() => {
+        console.log('preparing to render places.ejs...');
+
+        //render "places.ejs" and pass in categories object
+        res.render('place/places',{categories: categoryList});
+
+    // }, 500);
 });
 
 // add place page
@@ -50,10 +101,11 @@ router.get('/', function(req, res){
 router.post('/add', upload.single('image'), function(req, res){
 
     //TODO: validate form fields
-    var place_coords = JSON.parse(req.body.placecoords);
+    var placecoords = JSON.parse(req.body.placecoords);
 
-    // console.log('place coords (in router): ' + place_coords + ', type: ' + typeof place_coords)
+    // console.log('place coords (in router): ' + placecoords + ', type: ' + typeof placecoords)
 
+    //TODO: fix uniqueness of db items (if two users save same place)
     var newPlace;
     //image chosen
     // if (req.file) {
@@ -73,12 +125,13 @@ router.post('/add', upload.single('image'), function(req, res){
     newPlace = new Place({
         name: req.body.placename,
         category: req.body.placetag,
-        coords: place_coords,
+        coords: placecoords,
         placeID: req.body.placeid,
         userID: req.user._id,         //from MongoDB db
     });
     // }
 
+    //save place into MongoDB
     newPlace.save(function(err,place){
         if (err) { console.log(err); }      //TODO: change to flash
         // res.redirect('/places');
@@ -86,14 +139,14 @@ router.post('/add', upload.single('image'), function(req, res){
     });
 });
 
-// // get single place      : - route param (can be anything, often is an id)
-// router.get('/:placeId', function(req, res){
-//     //get place with id of placeId
-//     Place.findById(req.params.placeId).exec(function(err, place){
-//         //render detailplace.ejs and pass in place object
-//         res.render('place/detailplace', {place:place});
-//     });
-// });
+// get single place      : - route param (can be anything, often is an id)
+router.get('/:placeId', function(req, res){
+    //get place with id of placeId
+    Place.findById(req.params.placeId).exec(function(err, place){
+        //render detailplace.ejs and pass in place object
+        res.render('place/detailplace', {place:place});
+    });
+});
 //
 // // edit single place page
 // router.get('/edit/:placeId', function(req, res){
@@ -125,7 +178,7 @@ router.post('/add', upload.single('image'), function(req, res){
 //         res.status(500).send(err);
 //     }
 // });
-//
+
 // // delete single place
 // router.post('/delete/:placeId', function(req, res){
 //     //delete place

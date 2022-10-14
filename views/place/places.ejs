@@ -1,13 +1,28 @@
 <%- include('../_partial/_header'); %>
 
-<div class="row" style="margin-top:20px;">
-    <div class="col-md-6" style="margin-bottom:10px;">
-        <h1>My Places</h1>
+<% console.log(categories); %>
+
+<div class="container">
+    <h1 class="top-title">My Places</h1>
+
+    <!-- Carousel List of categories-->
+    <div class="carousel-container">
+        <% for (const [category, places] of Object.entries(categories)) { %>
+            <!-- Category title -->
+            <h2><%= category %></h2>
+            <div class="carousel-slider">
+
+                <% places.forEach((place) => { %>
+                    <a href="places/<%= place._id %>">
+                        <div class="card card-body"><%= place.name %></div>
+                    </a>
+                <% }) %>
+            </div>
+            <hr/>
+        <% } %>
+
     </div>
 </div>
-
-<!-- List all the places -->
-
 
 <%- include('../_partial/_footer'); %>
 

@@ -13,11 +13,22 @@
     <link href="/stylesheets/bootstrap.css" rel="stylesheet" type="text/css">
 
     <style>
+        /*navbar*/
+        .navbar {
+            margin-bottom: 20px;
+        }
+
+        .top-title {
+            margin-bottom: 30px;
+        }
+
+        /*map*/
         #map {
             height: 94.5vh;
             width: 100vw;
         }
 
+        /*search box*/
         input[type=search] {
             background-color: #fff;
             border: 0;
@@ -32,6 +43,7 @@
             min-width: 35%;
         }
 
+        /*details panel on map*/
         .details-panel-full {
             display: flex;
             height: 94.5vh;
@@ -94,6 +106,36 @@
 
         .details-panel-open .icon-close {
             display: initial !important;
+        }
+
+        /*carousels on places page*/
+        .carousel-container {
+            /*width: max-content;*/
+            /*max-width: 100%;*/
+        }
+
+        .carousel-slider {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow-x: scroll;
+            width: max-content;
+            max-width: 100%;
+        }
+        .carousel-slider a {
+            text-decoration: inherit;
+            color: inherit;
+        }
+
+        .card-body {
+            display:flex;
+            min-height: 260px;
+            min-width: 260px;
+            margin-right: 20px;
+            text-align:center;
+            align-items: center;
+            justify-content:center;
+            padding: 40px;
         }
     </style>
 </head>
