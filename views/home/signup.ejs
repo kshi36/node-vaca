@@ -1,43 +1,39 @@
 <%- include('../_partial/_header'); %>
 
-<div class="col-md-8">
-    <div class="panel panel-default">
-
-        <div class="panel-heading">
-            <h3>Sign Up</h3>
-        </div>
-        <div class="panel-body">
-            <form class="form-signin" method="POST" action="/signup">
-                <div class="input-group">
-                    <span class="input-group-addon" id="basic-addon1">@</span>
-                    <input type="text" class="form-control" placeholder="Username" name="username" aria-describedby="basic-addon1" required>
+<div class="container">
+    <h3 class="my-4">Sign Up</h3>
+    <div class="card" style="padding:1.5rem; max-width:780px">
+        <form action="/signup" method="POST" >
+            <div class="row mb-3">
+                <label for="inputUsername" class="col-sm-2 col-form-label">Username</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="inputUsername"
+                           placeholder="johndoe123" name="username" required>
                 </div>
-                <br />
-                <div class="input-group">
-                    <span class="input-group-addon" id="basic-addon1">@</span>
-                    <input type="email" class="form-control" placeholder="Email address" name="email"
-                           aria-describedby="basic-addon1" required>
+            </div>
+            <div class="row mb-3">
+                <label for="inputEmail" class="col-sm-2 col-form-label">Email</label>
+                <div class="col-sm-9">
+                    <input type="email" class="form-control" id="inputEmail"
+                           placeholder="johndoe@deer.com" name="email" required>
                 </div>
-                <br />
-                <div class="input-group">
-                    <span class="input-group-addon" id="basic-addon1"><span class="glyphicon glyphicon-lock"
-                                                                            aria-hidden="true"></span></span>
-                    <input type="password" name="password" class="form-control" placeholder="Password" aria-describedby="basic-addon1" required>
+            </div>
+            <div class="row mb-3">
+                <label for="inputPass" class="col-sm-2 col-form-label">Password</label>
+                <div class="col-sm-9">
+                    <input type="password" class="form-control" id="inputPass"
+                           placeholder="Password" name="password" required>
                 </div>
-                <br />
-                <div class="input-group">
-                    <span class="input-group-addon" id="basic-addon1"><span class="glyphicon glyphicon-lock"
-                                                                            aria-hidden="true"></span></span>
-                    <input type="password" class="form-control" placeholder="Re-password"
-                           aria-describedby="basic-addon1" name="repassword" required>
+            </div>
+            <div class="row mb-3">
+                <label for="inputConfPass" class="col-sm-2 col-form-label">Re-Password</label>
+                <div class="col-sm-9">
+                    <input type="password" class="form-control" id="inputConfPass"
+                           placeholder="Re-Password" name="repassword" required>
                 </div>
-
-                <br />
-
-                <input type="submit" class="btn btn-default navbar-btn" value="Sign Up" />
-
-            </form>
-        </div>
+            </div>
+            <button type="submit" class="btn btn-outline-success">Sign Up</button>
+        </form>
     </div>
 </div>
 

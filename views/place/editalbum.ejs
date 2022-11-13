@@ -1,0 +1,103 @@
+<%- include("../_partial/_header.ejs"); %>
+
+<div>
+    <div class="row my-4 album-header">
+        <div class="col"></div>
+        <h1 class="col text-center album-title"><%= place.name %></h1>
+        <div class="col album-controls">
+            <!--    file upload-->
+            <form action="/places/album/update" method="POST" enctype="multipart/form-data" id="editform">
+                <button type="submit" class="btn btn-success btn-circle btn-lg" title="Save edits"
+                        style="border-radius: 50%;" name="submitbtn" value="saved" onclick="submitForm(true);">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                    </svg>
+                </button>
+                <button type="submit" class="btn btn-danger btn-circle btn-lg" title="Cancel edits"
+                        style="border-radius: 50%;" name="submitbtn" value="canceled" onclick="submitForm(false);">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                    </svg>
+                </button>
+                <label class="mx-5 btn btn-warning btn-md" for="files-input" title="Choose photos" style="border-radius: 50%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="26" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                    </svg>
+                </label>
+                
+                <!--Hidden form field for place id-->
+                <input type="hidden" id="placeid" name="placeid" value="<%= place._id %>">
+                
+                <!--Files field-->
+                <input type="file" id="files-input" name="photos" multiple accept="image/*" style="display:none">
+            </form>
+        </div>
+    </div>
+    <div class="row mx-4 album-container">
+        <div class="col-9">
+            <h4>Gallery</h4>
+            <% place.photos.forEach(function(photoURL){ %>
+                <div class="card border-light" style="width:300px">
+                    <img src="<%= '/' + photoURL %>" alt="logo" class="card-img">
+                </div>
+            <% }) %>
+
+            <!--TODO: in prog Packery integration-->
+<!--            <div class="grid" data-packery='{ "itemSelector": ".grid-item", "gutter": 10 }'>-->
+<!--                <% place.photos.forEach(function(photoURL){ %>-->
+<!--                    <div class="grid-item">-->
+<!--                        <img src="<%= '/' + photoURL %>" alt="logo" class="card-img">-->
+<!--                    </div>-->
+<!--                <% }) %>-->
+<!--            </div>-->
+        </div>
+        <div class="col-3">
+            <h4>Upload photos</h4>
+            <div class="vert-slider" id="upload-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('files-input').addEventListener('change', function(e){
+        //acquire uploaded files
+        const files = e.target.files;
+        if (files) {
+            const output = document.getElementById('upload-container');
+            const len = files.length;
+            for (let i=0; i<len; i++) {
+                //must be an image
+                if (!files[i].type.match('image')) continue;
+
+                var reader = new FileReader();
+                reader.addEventListener('load', function(event){
+                    const picFile = event.target;
+                    const div = document.createElement('div');
+                    div.classList.add('card', 'border-light');
+                    div.innerHTML = `<img src="${picFile.result}" class="card-img" title="${picFile.name}">`;
+                    output.appendChild(div);
+                });
+                reader.readAsDataURL(files[i]);
+            }
+        }
+    });
+
+    function submitForm(confirm){
+        console.log('preparing to submit form...');
+        const form = document.getElementById('editform');
+        console.log('form submit photos value: ' + form.photos.value);
+        if (!confirm) {
+            console.log('in form: canceled edit, no images uploaded');
+            form.photos.value = [];
+            console.log('new form submit photos value: ' + form.photos.value);
+        }
+        else {
+            console.log('in form: saved edit, images uploaded and saved');
+        }
+    }
+</script>
+
+<script src="/javascripts/masonry.pkgd.min.js" defer></script>
+<script src="/javascripts/packery.pkgd.min.js" defer></script>
+<%- include("../_partial/_footer.ejs"); %>
+

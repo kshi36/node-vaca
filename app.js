@@ -43,8 +43,10 @@ app.use(session({
 }));
 
 // serve static files from path "/public"
-// app.use(express.static(path.resolve(__dirname, 'public')));
-app.use(express.static(__dirname + '/public'));
+// app.use('/public', express.static(__dirname + '/public'));
+// app.use('/uploads', express.static(__dirname + '/uploads'));
+app.use(express.static('public'));
+app.use('/uploads', express.static(__dirname + '/uploads'));
 
 // use passport
 app.use(passport.initialize());

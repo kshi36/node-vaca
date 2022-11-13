@@ -34,14 +34,6 @@ router.use(ensureAuthenticated);
 /** Routes */
 // full list of places page
 router.get('/', async function(req, res){
-    //get all places from db
-    // Place.find({userID: req.user.id}).exec(function(err, places){
-    //     if (err) { console.log(err); }  //TODO: change to flash
-    //
-    //     //render "places.ejs" and pass in places object
-    //     res.render('place/places', {places:places});
-    // });
-
     //get all categories (each a list of places) from db
     const Categories = {
         Park: 'Park',
@@ -56,128 +48,132 @@ router.get('/', async function(req, res){
     //object to store categories list
     var categoryList = {};
 
-    console.log('populating categories list...');
-
-    // Object.keys(Categories).forEach((category) => {
-    //     console.log('category: '+category);
-    //     //get places of specific category
-    //     Place.find({category: category}).exec(function(err, places){
-    //         console.log('category: '+category + ', size: ' + places.length);
-    //         if (err) { console.log(err); }  //TODO: change to flash
-    //
-    //         categoryList[category] = places;
-    //     });
-    //
-    //     // const places = Place.find({category: category});
-    //     // if (places.length !== 0) {
-    //     //     console.log('size: ' + places.length);
-    //     //     categoryList[category] = places;
-    //     // }
-    // });
-
+    //TODO: fix await code?
     await Object.keys(Categories).reduce(async (memo, category) => {
         await memo;
         const places = await Place.find({category: category});
-        console.log('size: ' + places.length);
+        // console.log('size: ' + places.length);
         if (places.length !== 0) categoryList[category] = places;
-        console.log('contents: ' + categoryList[category]);
+        // console.log('contents: ' + categoryList[category]);
 
     }, undefined);
 
-    //TODO: properly implement async/await
-    // setTimeout(() => {
-        console.log('preparing to render places.ejs...');
+    // console.log('preparing to render places.ejs...');
 
-        //render "places.ejs" and pass in categories object
-        res.render('place/places',{categories: categoryList});
-
-    // }, 500);
+    //render "places.ejs" and pass in categories object
+    res.render('place/places',{categories: categoryList});
 });
 
 // add place page
 // router.get('/add', function(req, res){
 //     res.render('place/addplace');
 // });
-router.post('/add', upload.single('image'), function(req, res){
+router.post('/add', async function(req, res){
 
     //TODO: validate form fields
     var placecoords = JSON.parse(req.body.placecoords);
 
     // console.log('place coords (in router): ' + placecoords + ', type: ' + typeof placecoords)
 
-    //TODO: fix uniqueness of db items (if two users save same place)
-    var newPlace;
-    //image chosen
-    // if (req.file) {
-    //     newPlace = new Place({
-    //         // title: req.body.title,
-    //         // content: req.body.content,
-    //         // image: req.file.path,
-    //
-    //         name: req.body.placename,
-    //         category: req.body.placetag,
-    //         coords: req.body.placecoords,
-    //         placeID: req.body.placeid,
-    //         userID: req.user._id,         //from MongoDB db
-    //     });
-    // }
-    // else {
-    newPlace = new Place({
-        name: req.body.placename,
-        category: req.body.placetag,
-        coords: placecoords,
-        placeID: req.body.placeid,
-        userID: req.user._id,         //from MongoDB db
-    });
-    // }
-
-    //save place into MongoDB
-    newPlace.save(function(err,place){
-        if (err) { console.log(err); }      //TODO: change to flash
-        // res.redirect('/places');
+    //TODO: test different users can save same place
+    const dbPlace = await Place.findOne(
+        {userID: req.user._id, placeID: req.body.placeid}).
+                exec(); //exec used to return Promise (unnecessary here)
+    if (dbPlace) {
+        console.log('New place is in DB, cancelling request...');
+        // req.flash('error', 'Place already added!');
         res.sendStatus(204);
-    });
+    }
+    else {
+
+        console.log('New place is not in DB, adding to DB...');
+
+        //new mongoose place object
+        var newPlace = new Place({
+            name: req.body.placename,
+            photos: [],
+            category: req.body.placetag,
+            coords: placecoords,
+            placeID: req.body.placeid,
+            userID: req.user._id,         //from MongoDB db
+        });
+
+        //save place into MongoDB
+        newPlace.save(function(err, place){
+            if (err) {
+                console.log(err);
+            }      //TODO: change to flash
+            // res.redirect('/places');
+            res.sendStatus(204);
+        });
+
+        // const savedPlace = await Place.findById(req.body.placeid);
+        //
+        // //new mongoose album object
+        // var newAlbum = new Album({
+        //     photos: [],
+        //     modelID: savedPlace._id,
+        //     userID: req.user._id
+        // });
+        //
+        // //save album associated w/ place into MongoDB
+        // newAlbum.save(function(){
+        //     if (err) {
+        //         console.log(err);
+        //     }      //TODO: change to flash
+        //     res.sendStatus(204);
+        // });
+    }
 });
 
 // get single place      : - route param (can be anything, often is an id)
-router.get('/:placeId', function(req, res){
+router.get('/album/:placeId', function(req, res){
     //get place with id of placeId
     Place.findById(req.params.placeId).exec(function(err, place){
-        //render detailplace.ejs and pass in place object
-        res.render('place/detailplace', {place:place});
+        //render album.ejs and pass in place object
+        res.render('place/album', {place:place});
     });
 });
-//
-// // edit single place page
-// router.get('/edit/:placeId', function(req, res){
-//     //get place with id of placeId
-//     Place.findById(req.params.placeId).exec(function(err, place){
-//         //render editplace.ejs and pass in place object
-//         res.render('place/editplace', {place:place});
-//     });
-// });
-// router.post('/update', upload.single('image'), async function(req, res){
-//     //asynchronously find place by id
-//     const place = await Place.findById(req.body.placeid);
-//
-//     //update place
-//     place.title = req.body.title;
-//     place.content = req.body.content;
-//     if (req.file)
-//         place.image = req.file.path;
-//
-//     //asynchronously save place
-//     try {
-//         let savePlace = await place.save();
-//         console.log("saved place ", savePlace);
-//         // res.redirect('/places/' + req.body.placeid);      //redirect to single place
-//         res.redirect('/places');      //redirect to list of places
-//     }
-//     catch (err) {
-//         console.log("error happen");        //TODO: refine
-//         res.status(500).send(err);
-//     }
-// });
+
+// edit single place page
+router.get('/album/edit/:placeId', function(req, res){
+    //get place with id of placeId
+    Place.findById(req.params.placeId).exec(function(err, place){
+        //render editalbum.ejs and pass in place object
+        res.render('place/editalbum', {place:place});
+    });
+});
+router.post('/album/update', upload.array('photos'), async function(req, res){
+    //save/cancel paths
+    if (req.body.submitbtn == 'canceled') {
+        console.log('update album canceled...');
+        res.redirect('/places/album/' + req.body.placeid);
+    }
+    else {
+        console.log('update album confirmed...');
+        //asynchronously find place by id
+        const place = await Place.findById(req.body.placeid);
+        if (!place.photos) place.photos = [];       //TODO: remove after resetting DB
+
+        //update place's album (photos)
+        const files = req.files;
+        if (files) {
+            for (const file of files) {
+                place.photos.push(file.path);       //add photo URLs to list
+            }
+        }
+
+        //asynchronously save album
+        try {
+            let savePlace = await place.save();
+            console.log('saved place ', savePlace);
+            res.redirect('/places/album/' + req.body.placeid);      //redirect to single place
+        } catch (err) {
+            console.log("error happen");        //TODO: refine
+            res.status(500).send(err);
+        }
+    }
+});
 
 // // delete single place
 // router.post('/delete/:placeId', function(req, res){
