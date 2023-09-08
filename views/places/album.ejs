@@ -1,0 +1,122 @@
+<%- include("../_partial/_header.ejs"); %>
+
+<div>
+    <div class="row my-4 mx-3 album-header">
+        <div class="col"></div>
+        <h1 class="col text-center album-title"><%= place.name %></h1>
+        <div class="col album-controls">
+            <!-- TODO: remove placeid in url -->
+            <button type="button" onclick="location.href='/places/album/edit/<%= place._id %>'"
+                    class="btn btn-success btn-circle btn-lg" title="Edit album"
+                    style="border-radius: 50%;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Packery -->
+    <div class="grid">
+        <div class="grid-sizer"></div>      <!-- empty div for grid sizing -->
+        <div class="gutter-sizer"></div>    <!-- empty div for gutter sizing -->
+
+        <% for (const photo of place.photos) { %>
+            <div class="grid-item nondrag" data-item-id="<%= photo.id %>">
+                <img src="<%= photo.url %>" alt="logo" draggable="false">
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- extract ejs vars -->
+<script>
+    const initPositions = JSON.parse('<%- JSON.stringify(place.photos) %>');
+    // console.log('album, initPositions: ', initPositions);
+</script>
+
+<!-- Packery functionality -->
+<script src="/javascripts/packery.pkgd.js"></script>
+<script src="/javascripts/imagesloaded.pkgd.js"></script>
+<script src="/javascripts/draggabilly.pkgd.js"></script>
+<script>
+    /* custom Packery methods (for use in saving/restoring layout) */
+    // get JSON-friendly data for items positions
+    Packery.prototype.getShiftPositions = function( attrName, numCols=3 ) {
+        attrName = attrName || 'id';
+        var _this = this;
+        return this.items.map( function( item ) {
+            return {
+                url: item.element.querySelector('img').getAttribute('src'),
+                id: parseInt(item.element.getAttribute( attrName )),
+                xPos: Math.round((item.rect.x / _this.packer.width) * numCols),
+                // y: item.rect.y / _this.packer.height
+            }
+        });
+    };
+
+    Packery.prototype.initShiftLayout = function( positions, attr, numCols=3 ) {
+        if ( !positions ) {
+            // if no initial positions, run packery layout
+            this.layout();
+            return;
+        }
+        // parse string to JSON
+        if ( typeof positions == 'string' ) {
+            try {
+                positions = JSON.parse( positions );
+            } catch( error ) {
+                console.error( 'JSON parse error: ' + error );
+                this.layout();
+                return;
+            }
+        }
+
+        attr = attr || 'id'; // default to id attribute
+        this._resetLayout();
+        // set item order and horizontal position from saved positions
+        this.items = positions.map( function( itemPosition ) {
+            var selector = '[' + attr + '="' + itemPosition.id  + '"]'
+            var itemElem = this.element.querySelector( selector );
+            var item = this.getItem( itemElem );
+            if (item) {
+                item.rect.x = (itemPosition.xPos / numCols) * this.packer.width;
+                // item.rect.y = itemPosition.y * this.packer.height;
+                return item;
+            }
+        }, this );
+        // this.shiftLayout();
+        this.resizeShiftPercentLayout();
+    };
+</script>
+<script>
+    var grid = document.querySelector('.grid');
+    var pckry;
+
+    //option 1: layout Packery after each image loads
+    // imagesLoaded(grid).on('progress', function (){
+    //    pckry.layout();
+    // });
+
+    //option 2: init Packery after all images loaded
+    imagesLoaded(grid, function (){
+        pckry = new Packery(grid, {
+            itemSelector: '.grid-item',
+            columnWidth: '.grid-sizer',
+            percentPosition: true,
+            gutter: '.gutter-sizer',
+            transitionDuration: '0.5s',
+            shiftPercentResize: true,    //undocumented option, don't rearrange images
+            initLayout: false,      //restore saved position data manually (from DB)
+        });
+
+        pckry.once('layoutComplete', function (){
+            grid.style.visibility = "visible";
+        });
+
+        //get saved dragged positions from DB
+        pckry.initShiftLayout(initPositions, 'data-item-id');
+    });
+</script>
+
+<%- include("../_partial/_footer.ejs"); %>

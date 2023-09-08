@@ -15,9 +15,11 @@ router.use(function(req, res, next){      //next: move on to next line (in this 
 
 /** Routes (from other files) */
 router.use('/', require('./home'));
-router.use('/places', require('./place'));
+router.use('/places', require('./places'));
 router.use('/map', require('./map'));
 router.use('/profile', require('./profile'));
+
+/*Example*/
 // router.use('/posts', require('./post'));  //think: for router, the url goes like /posts/[value of require()]
 
 module.exports = router;

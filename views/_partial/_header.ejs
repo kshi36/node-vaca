@@ -9,10 +9,25 @@
     <title>Vaca</title>
 
     <!-- Bootstrap -->
-<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">-->
+    <!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">-->
     <link href="/stylesheets/bootstrap.css" rel="stylesheet" type="text/css">
 
     <style>
+        /*Base css*/
+        *, *:before, *:after {
+            -webkit-box-sizing:border-box;
+            -moz-box-sizing:border-box;
+            box-sizing: border-box;
+        }
+        html {      /* force scrollbar */
+            overflow-y: scroll;
+        }
+        html, body, main {
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
         /*map*/
         #map {
             height: 94.5vh;
@@ -132,8 +147,57 @@
             text-align: center;
         }
 
-        /*Masonry & Packery grid layout*/
-        .grid-item { width: 200px; }
+        /*Packery (test)*/
+
+        .grid {
+            margin: 30px;
+            visibility: hidden;
+        }
+        /* clear fix */
+        .grid:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        .grid-sizer, .grid-item {
+            width: 32%;
+        }
+        .gutter-sizer {
+            width: 2%;
+        }
+
+        .grid-item {
+            float: left;
+            box-shadow: 0px 1px 3px 0 rgba(0,0,0,0.2);
+        }
+        .grid-item > img {
+            display: block;
+            width: 100%;
+        }
+        .grid-item:hover {
+            cursor: move;
+        }
+        .nondrag:hover {
+            cursor: default !important;
+        }
+        .grid-item.is-dragging,
+        .grid-item.is-positioning-post-drag {
+            z-index: 2;
+        }
+        .grid-item-delete {
+            position: absolute;
+            top: -1rem;
+            right: -1rem;
+            visibility: hidden;
+        }
+        .packery-drop-placeholder {
+            outline: 3px dashed hsla(0, 0%, 0%, 0.3);
+            outline-offset: -6px;
+            -webkit-transition: -webkit-transform 0.2s;
+            transition: transform 0.2s;
+        }
+
     </style>
 </head>
 <body>

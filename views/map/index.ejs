@@ -142,9 +142,9 @@
                 markertemp.addListener('click', function(event){      //event.latLng records at click position
                     console.log('Clicked on a searchbox marker...');
 
-                    //POI (Google's point of interest) is clicked
-                    console.log('POI place id (searchbox): ' + place.place_id);
-                    console.log('POI coords (searchbox): ' + event.latLng + ', type: ' + typeof event.latLng);
+                    //POI (Google's point of interest) is clicked       TODO: remove
+                    // console.log('POI place id (searchbox): ' + place.place_id);
+                    // console.log('POI coords (searchbox): ' + event.latLng + ', type: ' + typeof event.latLng);
 
                     //stop infowindow from appearing
                     event.stop();

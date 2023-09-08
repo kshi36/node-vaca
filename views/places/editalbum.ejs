@@ -1,0 +1,298 @@
+<%- include("../_partial/_header.ejs"); %>
+
+<div>
+    <div class="row my-4 mx-3 album-header">
+        <div class="col"></div>
+        <h1 class="col text-center album-title"><%= place.name %></h1>
+        <div class="col album-controls">
+            <!-- Save/Cancel changes -->
+            <form method="POST" id="editform">
+                <!-- TODO: responsive resizing (better buttons/layout) -->
+                <button type="submit" class="btn btn-success btn-circle btn-lg" title="Save edits"
+                        style="border-radius: 50%;" name="submitbtn" value="saved">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                    </svg>
+                </button>
+                <button type="submit" class="btn btn-danger btn-circle btn-lg" title="Cancel edits"
+                        style="border-radius: 50%;" name="submitbtn" value="canceled">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                    </svg>
+                </button>
+                <label class="btn btn-light btn-md" for="files-input" title="Choose photos" style="border-radius: 50%; float:right;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="30" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                    </svg>
+                </label>
+
+                <!--Hidden form field for place id-->
+                <input type="hidden" id="placeid" name="placeid" value="<%= place._id %>">
+
+                <!--Files field-->
+                <input type="file" id="files-input" name="files" multiple accept="image/*" style="display:none">
+            </form>
+        </div>
+    </div>
+
+    <!-- Packery (test) -->
+    <div class="grid">
+        <div class="grid-sizer"></div>      <!-- empty div for grid sizing -->
+        <div class="gutter-sizer"></div>    <!-- empty div for gutter sizing -->
+        <!-- TODO: remove dummy items -->
+        <!--        <div class="grid-item" data-item-id="1">-->
+        <!--            <img src="/uploads/dummy_images/falls1.jpg">-->
+        <!--            <div class="grid-item-delete">-->
+        <!--                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="45" height="45" viewBox="0,0,256,256">-->
+        <!--                    <g transform="translate(32,32) scale(0.75,0.75)"><g fill="#fa5252" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" style="mix-blend-mode: normal"><path d="M68.26667,298.66667c-61.26679,0 -110.93333,-49.66655 -110.93333,-110.93333v-119.46667c0,-61.26679 49.66655,-110.93333 110.93333,-110.93333h119.46667c61.26679,0 110.93333,49.66655 110.93333,110.93333v119.46667c0,61.26679 -49.66655,110.93333 -110.93333,110.93333z" id="shape"></path></g><g fill="#000000" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" style="mix-blend-mode: normal"><g transform="scale(5.33333,5.33333)"><path d="M24,4c-3.50831,0 -6.4296,2.62143 -6.91992,6h-6.8418c-0.08516,-0.01457 -0.17142,-0.02176 -0.25781,-0.02148c-0.07465,0.00161 -0.14908,0.00879 -0.22266,0.02148h-3.25781c-0.54095,-0.00765 -1.04412,0.27656 -1.31683,0.74381c-0.27271,0.46725 -0.27271,1.04514 0,1.51238c0.27271,0.46725 0.77588,0.75146 1.31683,0.74381h2.13867l2.51758,26.0293c0.27108,2.80663 2.65553,4.9707 5.47461,4.9707h14.73633c2.81922,0 5.20364,-2.16383 5.47461,-4.9707l2.51953,-26.0293h2.13867c0.54095,0.00765 1.04412,-0.27656 1.31683,-0.74381c0.27271,-0.46725 0.27271,-1.04514 0,-1.51238c-0.27271,-0.46725 -0.77588,-0.75146 -1.31683,-0.74381h-3.25586c-0.15912,-0.02581 -0.32135,-0.02581 -0.48047,0h-6.84375c-0.49032,-3.37857 -3.41161,-6 -6.91992,-6zM24,7c1.87916,0 3.42077,1.26816 3.86133,3h-7.72266c0.44056,-1.73184 1.98217,-3 3.86133,-3zM11.65039,13h24.69727l-2.49219,25.74023c-0.12503,1.29513 -1.18751,2.25977 -2.48828,2.25977h-14.73633c-1.29892,0 -2.36336,-0.96639 -2.48828,-2.25977zM20.47656,17.97852c-0.82766,0.01293 -1.48843,0.69381 -1.47656,1.52148v15c-0.00765,0.54095 0.27656,1.04412 0.74381,1.31683c0.46725,0.27271 1.04514,0.27271 1.51238,0c0.46725,-0.27271 0.75146,-0.77588 0.74381,-1.31683v-15c0.00582,-0.40562 -0.15288,-0.7963 -0.43991,-1.08296c-0.28703,-0.28666 -0.67792,-0.44486 -1.08353,-0.43852zM27.47656,17.97852c-0.82766,0.01293 -1.48843,0.69381 -1.47656,1.52148v15c-0.00765,0.54095 0.27656,1.04412 0.74381,1.31683c0.46725,0.27271 1.04514,0.27271 1.51238,0c0.46725,-0.27271 0.75146,-0.77588 0.74381,-1.31683v-15c0.00582,-0.40562 -0.15288,-0.7963 -0.43991,-1.08296c-0.28703,-0.28666 -0.67792,-0.44486 -1.08353,-0.43852z"></path></g></g></g>-->
+        <!--                </svg>-->
+        <!--            </div>-->
+        <!--        </div>-->
+        <!--        <div class="grid-item" data-item-id="2">-->
+        <!--            <img src="/uploads/dummy_images/mountain2.jpeg">-->
+        <!--        </div>-->
+        <!--        <div class="grid-item" data-item-id="3">-->
+        <!--            <img src="/uploads/dummy_images/mountain2.jpeg">-->
+        <!--        </div>-->
+        <!--        <div class="grid-item" data-item-id="4">-->
+        <!--            <img src="/uploads/dummy_images/mountain2.jpeg">-->
+        <!--        </div>-->
+        <!--        <div class="grid-item" data-item-id="5">-->
+        <!--            <img src="/uploads/dummy_images/mountain2.jpeg">-->
+        <!--        </div>-->
+
+        <% for (const photo of place.photos) { %>
+            <div class="grid-item" data-item-id="<%= photo.id %>">
+                <img src="<%= photo.url %>" alt="logo">
+            </div>
+        <% } %>
+    </div>
+
+</div>
+
+<!-- extract vars -->
+<script>
+    //get order positions
+    const initPositions = JSON.parse('<%- JSON.stringify(place.photos) %>');
+    // console.log('editalbum, initPositions: ', initPositions);
+
+    //get last item id
+    var lastId;
+    document.addEventListener('DOMContentLoaded', function (){
+        const lastItem = grid.querySelector('.grid-item:last-child');
+        lastId = (lastItem) ? lastItem.getAttribute('data-item-id') : 0;
+    });
+</script>
+
+<script>
+    //TODO: remove functionality
+    const items = document.querySelectorAll('.grid-item');
+    // items.forEach(function (item){
+    //     const deleteBtn = item.querySelector('.grid-item-delete');
+    //     item.addEventListener('mouseover', function (){
+    //         deleteBtn.style.visibility = "visible";
+    //     })
+    //     item.addEventListener('mouseout', function (){
+    //         deleteBtn.style.visibility = "hidden";
+    //     })
+    // });
+</script>
+
+<!-- Packery (test) functionality -->
+<script src="/javascripts/packery.pkgd.js"></script>
+<script src="/javascripts/imagesloaded.pkgd.js"></script>
+<script src="/javascripts/draggabilly.pkgd.js"></script>
+<script>
+    // TODO: remove? always resize
+    // Packery.prototype.needsResizeLayout = function() {
+    //     return true;
+    // };
+
+    /* custom Packery methods (for use in saving/restoring layout) */
+    // get JSON-friendly data for items positions
+    Packery.prototype.getShiftPositions = function( attrName, numCols=3 ) {
+        attrName = attrName || 'id';
+        var _this = this;
+        return this.items.map( function( item ) {
+            return {
+                url: item.element.querySelector('img').getAttribute('src'),
+                id: parseInt(item.element.getAttribute( attrName )),
+                xPos: Math.round((item.rect.x / _this.packer.width) * numCols),
+                // y: item.rect.y / _this.packer.height
+            }
+        });
+    };
+
+    Packery.prototype.initShiftLayout = function( positions, attr, numCols=3 ) {
+        if ( !positions ) {
+            // if no initial positions, run packery layout
+            this.layout();
+            return;
+        }
+        // parse string to JSON
+        if ( typeof positions == 'string' ) {
+            try {
+                positions = JSON.parse( positions );
+            } catch( error ) {
+                console.error( 'JSON parse error: ' + error );
+                this.layout();
+                return;
+            }
+        }
+
+        attr = attr || 'id'; // default to id attribute
+        this._resetLayout();
+        // set item order and horizontal position from saved positions
+        this.items = positions.map( function( itemPosition ) {
+            var selector = '[' + attr + '="' + itemPosition.id  + '"]'
+            var itemElem = this.element.querySelector( selector );
+            var item = this.getItem( itemElem );
+            if (item) {
+                item.rect.x = (itemPosition.xPos / numCols) * this.packer.width;
+                // item.rect.y = itemPosition.y * this.packer.height;
+                return item;
+            }
+        }, this );
+        // this.shiftLayout();
+        this.resizeShiftPercentLayout();
+    };
+</script>
+<script>
+    var grid = document.querySelector('.grid');
+    var pckry;
+
+    //option 1: layout Packery after each image loads
+    // imagesLoaded(grid).on('progress', function (){
+    //    pckry.layout();
+    // });
+
+    //option 2: init Packery after all images loaded
+    imagesLoaded(grid, function (){
+        pckry = new Packery(grid, {
+            itemSelector: '.grid-item',
+            columnWidth: '.grid-sizer',
+            percentPosition: true,
+            gutter: '.gutter-sizer',
+            transitionDuration: '0.5s',
+            shiftPercentResize: true,    //undocumented option, don't rearrange images
+            initLayout: false,      //restore saved position data manually (from DB)
+        });
+
+        pckry.once('layoutComplete', function (){
+            grid.style.visibility = "visible";
+        });
+
+        //get saved dragged positions from DB
+        pckry.initShiftLayout(initPositions, 'data-item-id');
+
+        //Draggabilly
+        pckry.getItemElements().forEach( function (elem){
+            var draggie = new Draggabilly(elem);
+            pckry.bindDraggabillyEvents(draggie);
+        });
+    });
+
+    // console.log(pckry.getItemElements().map((item) => item.firstElementChild.getAttribute('src')));
+</script>
+
+<script>
+    // input files
+    const newfiles = [];        //list of new image files uploaded over time
+    document.getElementById('files-input').addEventListener('change', function (e){
+        //acquire uploaded files
+        const files = e.target.files;
+        if (files?.length) {
+            const grid = document.querySelector('.grid');
+
+            //read files in one-at-a-time
+            const len = files.length;
+            for (let i=0; i<len; i++) {
+                //filter out non-images
+                if (!files[i].type.match('image')) {
+                    console.log('file uploaded is not an image: ', files[i], ', ', files[i].type);
+                    continue;
+                }
+
+                const reader = new FileReader();      //reader for image file
+                reader.addEventListener('load', function (event){
+                    //store image files in global var
+                    newfiles.push(event.target.origFile);
+
+                    const picFile = event.target;
+
+                    //create item div
+                    const item = document.createElement("div");
+                    item.classList.add('grid-item');
+                    //assign id to item
+                    lastId += 1;
+                    item.setAttribute('data-item-id', parseInt(lastId));
+                    //set innerHTML
+                    item.innerHTML = `<img src="${picFile.result}" alt="logo">`;
+
+                    //append to album grid (Packery instance)
+                    grid.appendChild(item);
+                    pckry.appended([item]);
+
+                    //make new item draggable (Draggabilly)
+                    var draggie = new Draggabilly(item);
+                    pckry.bindDraggabillyEvents(draggie);
+
+                    //re-layout
+                    // pckry.shiftLayout();
+                    pckry.resizeShiftPercentLayout();
+                });
+                reader.origFile = files[i];
+                reader.readAsDataURL(files[i]);
+            }
+        }
+    });
+
+    // submit form
+    const form = document.querySelector('#editform');
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('preparing to submit form...');
+
+        // which button submitted: saved or canceled
+        const submitter = e.submitter;
+
+        //create formdata to send
+        const formData = new FormData(this);
+        formData.delete('files');   //remove key for files-input
+
+        //append photos array (order, new urls) to formdata
+        if (submitter.value === 'saved') {
+            formData.set('submitbtn', 'saved');
+
+            //add new files
+            formData.append('newfileslength', newfiles.length.toString());
+            for (let i=0, len=newfiles.length; i<len; i++)
+                formData.append('newfiles', newfiles[i]);
+            // console.log('newfiles:', formData.getAll('newfiles'));
+
+            //save drag positions (order)
+            const positions = pckry.getShiftPositions('data-item-id');
+            for (let i=0, len=positions.length; i<len; i++) {
+                if (/^data:image/i.test(positions[i].url)) {     //regex: i-flag is case-insensitive
+                    positions[i].url="newurl";
+                }
+                formData.append('photos', JSON.stringify(positions[i]));
+            }
+            // console.log('formData photos:', formData.getAll('photos'));
+        }
+        else { formData.set('submitbtn', 'canceled'); }
+
+        //send POST req via XMLHttpRequest
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/places/album/update', true);
+        xhr.onload = function (e){
+            if (this.readyState == 4 && this.status == 200) {
+                //redirect in front-end (after AJAX request)
+                window.location.href = "/places/album/<%=place._id%>";
+            }
+        }
+        xhr.send(formData);
+    });
+</script>
+
+<%- include("../_partial/_footer.ejs"); %>

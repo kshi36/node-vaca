@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 
 // schema: representation of the data
 var albumSchema = mongoose.Schema({
-    photos:[{type:String, required:false}],  //URL of images
+    photos:[{type:String, required:false}],  //list of image URLs
     modelID:{type:mongoose.Schema.Types.ObjectId, //links to a Place object
         required:false, unique:true},
     userID:{type:mongoose.Schema.Types.ObjectId, required:true, unique:false},

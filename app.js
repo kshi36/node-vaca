@@ -6,7 +6,6 @@
 var express = require('express');
 var path = require('path');
 var mongoose = require('mongoose');
-var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var session = require('express-session');
@@ -19,6 +18,7 @@ var setUpPassport = require('./setuppassport');
 var app = express();
 
 // connect to MongoDB db
+mongoose.set('strictQuery', true);      //only fields specified in schema are saved
 mongoose.connect(params.DATABASECONNECTION);
 
 // set up passport
@@ -32,7 +32,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');      //use ejs templating
 
 // use parsers
-app.use(bodyParser.urlencoded({extended:false}));
+app.use(express.json());
+app.use(express.urlencoded({extended:false}));
 app.use(cookieParser());
 
 // use session

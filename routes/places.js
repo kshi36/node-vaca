@@ -1,5 +1,5 @@
 /**
- * Stores all routes for "/place"
+ * Stores all routes for "/places"
  */
 
 var express = require('express');
@@ -12,7 +12,6 @@ var ensureAuthenticated = require('../auth/auth').ensureAuthenticated;
 
 // place model
 var Place = require('../models/place');
-const mongoose = require("mongoose");
 
 var router = express.Router();
 
@@ -28,7 +27,7 @@ var storage = multer.diskStorage({
 });
 var upload = multer({storage:storage});     //used in route to upload file
 
-// use ensure authentication fn. for entire route of "/place" (so don't need middleware for every router fn.)
+// use ensure authentication fn. for entire route of "/places" (so don't need middleware for every router fn.)
 router.use(ensureAuthenticated);
 
 /** Routes */
@@ -51,7 +50,7 @@ router.get('/', async function(req, res){
     //TODO: fix await code?
     await Object.keys(Categories).reduce(async (memo, category) => {
         await memo;
-        const places = await Place.find({category: category});
+        const places = await Place.find({userID: req.user._id, category: category});
         // console.log('size: ' + places.length);
         if (places.length !== 0) categoryList[category] = places;
         // console.log('contents: ' + categoryList[category]);
@@ -61,19 +60,21 @@ router.get('/', async function(req, res){
     // console.log('preparing to render places.ejs...');
 
     //render "places.ejs" and pass in categories object
-    res.render('place/places',{categories: categoryList});
+    res.render('places/',{categories: categoryList});
 });
 
 // add place page
 // router.get('/add', function(req, res){
-//     res.render('place/addplace');
+//     res.render('places/addplace');
 // });
-router.post('/add', async function(req, res){
+//TODO: upload image
+router.post('/add', upload.single('placeimage'), async function(req, res){
+
+    console.log('req body: ' + JSON.stringify(req.body));
+    // console.log('place coords (in router): ' + req.body.placecoords + ', type: ' + typeof req.body.placecoords);
 
     //TODO: validate form fields
     var placecoords = JSON.parse(req.body.placecoords);
-
-    // console.log('place coords (in router): ' + placecoords + ', type: ' + typeof placecoords)
 
     //TODO: test different users can save same place
     const dbPlace = await Place.findOne(
@@ -81,7 +82,7 @@ router.post('/add', async function(req, res){
                 exec(); //exec used to return Promise (unnecessary here)
     if (dbPlace) {
         console.log('New place is in DB, cancelling request...');
-        // req.flash('error', 'Place already added!');
+        // req.flash('error', 'Place already added!');      //TODO: flash
         res.sendStatus(204);
     }
     else {
@@ -131,7 +132,7 @@ router.get('/album/:placeId', function(req, res){
     //get place with id of placeId
     Place.findById(req.params.placeId).exec(function(err, place){
         //render album.ejs and pass in place object
-        res.render('place/album', {place:place});
+        res.render('places/album', {place:place});
     });
 });
 
@@ -140,12 +141,12 @@ router.get('/album/edit/:placeId', function(req, res){
     //get place with id of placeId
     Place.findById(req.params.placeId).exec(function(err, place){
         //render editalbum.ejs and pass in place object
-        res.render('place/editalbum', {place:place});
+        res.render('places/editalbum', {place:place});
     });
 });
-router.post('/album/update', upload.array('photos'), async function(req, res){
+router.post('/album/update', upload.array('newfiles'), async function(req, res){
     //save/cancel paths
-    if (req.body.submitbtn == 'canceled') {
+    if (req.body.submitbtn === 'canceled') {
         console.log('update album canceled...');
         res.redirect('/places/album/' + req.body.placeid);
     }
@@ -153,14 +154,23 @@ router.post('/album/update', upload.array('photos'), async function(req, res){
         console.log('update album confirmed...');
         //asynchronously find place by id
         const place = await Place.findById(req.body.placeid);
-        if (!place.photos) place.photos = [];       //TODO: remove after resetting DB
+        if (!place.photos) place.photos = [];       //initialize photos list
 
-        //update place's album (photos)
-        const files = req.files;
-        if (files) {
-            for (const file of files) {
-                place.photos.push(file.path);       //add photo URLs to list
+        //TODO: test
+        //update place's album (photos list)
+        const files = req.files;        //req.files is array from "upload.array()"
+
+        if (req.body.photos?.length) {
+            const newFilesLength = parseInt(req.body.newfileslength);
+            const offset = req.body.photos.length-newFilesLength;
+
+            //preprocess photos array to update DB
+            const photosInput = req.body.photos.map((photo) => JSON.parse(photo))
+            for (let i=0; i<newFilesLength; i++) {
+                photosInput[i+offset].url = '/' + files[i].path;
             }
+            //set (new) photos array in DB
+            place.set('photos', photosInput);
         }
 
         //asynchronously save album
@@ -169,7 +179,7 @@ router.post('/album/update', upload.array('photos'), async function(req, res){
             console.log('saved place ', savePlace);
             res.redirect('/places/album/' + req.body.placeid);      //redirect to single place
         } catch (err) {
-            console.log("error happen");        //TODO: refine
+            console.log("error happen", err);        //TODO: refine
             res.status(500).send(err);
         }
     }

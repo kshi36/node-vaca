@@ -6,7 +6,7 @@ var express = require('express');
 var passport = require('passport');
 
 // ensure authentication fn.
-var ensureAuthenticated = require('../auth/auth').ensureAuthenticated;
+// var ensureAuthenticated = require('../auth/auth').ensureAuthenticated;
 
 // user model
 var User = require('../models/user');
